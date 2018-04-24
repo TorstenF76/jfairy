@@ -11,6 +11,7 @@ import com.google.inject.Provider;
 import com.devskiller.jfairy.data.DataMaster;
 import com.devskiller.jfairy.producer.BaseProducer;
 import com.devskiller.jfairy.producer.DateProducer;
+import com.devskiller.jfairy.producer.MagicProducer;
 import com.devskiller.jfairy.producer.company.Company;
 import com.devskiller.jfairy.producer.company.CompanyFactory;
 import com.devskiller.jfairy.producer.company.CompanyProperties;
@@ -32,19 +33,21 @@ public final class Fairy {
 	private final NetworkProducer networkProducer;
 	private final BaseProducer baseProducer;
 	private final DateProducer dateProducer;
+	private final MagicProducer magicProducer;
 	private final CreditCardProvider creditCardProvider;
 	private final CompanyFactory companyFactory;
 	private final IBANFactory ibanFactory;
 
 	@Inject
 	Fairy(TextProducer textProducer, PersonFactory personFactory, NetworkProducer networkProducer,
-	      BaseProducer baseProducer, DateProducer dateProducer, CreditCardProvider creditCardProvider,
-	      CompanyFactory companyFactory, IBANFactory ibanFactory) {
+	      BaseProducer baseProducer, DateProducer dateProducer, MagicProducer magicProducer,
+	      CreditCardProvider creditCardProvider, CompanyFactory companyFactory, IBANFactory ibanFactory) {
 		this.textProducer = textProducer;
 		this.personFactory = personFactory;
 		this.networkProducer = networkProducer;
 		this.baseProducer = baseProducer;
 		this.dateProducer = dateProducer;
+		this.magicProducer = magicProducer;
 		this.creditCardProvider = creditCardProvider;
 		this.companyFactory = companyFactory;
 		this.ibanFactory = ibanFactory;
@@ -109,6 +112,15 @@ public final class Fairy {
 		return dateProducer;
 	}
 
+	/**
+	 * use this method for auto-populating java objects
+	 * 
+	 * @return A {@link MagicProducer} instance
+	 */
+	public MagicProducer magicProducer() {
+		return magicProducer;
+	}
+	
 	/**
 	 * Use this method for generating IBAN (International Bank Account Number)
 	 *
