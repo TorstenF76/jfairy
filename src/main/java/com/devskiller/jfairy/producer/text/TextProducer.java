@@ -5,17 +5,13 @@ package com.devskiller.jfairy.producer.text;
 
 import static org.apache.commons.lang3.StringUtils.left;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 
 import com.devskiller.jfairy.producer.BaseProducer;
+import com.devskiller.jfairy.producer.unique.UniqueHandler;
 import com.devskiller.jfairy.producer.util.TextUtils;
 
 public class TextProducer implements Texts {
@@ -43,45 +39,7 @@ public class TextProducer implements Texts {
 	}
 
 	public Texts unique() {
-
-		InvocationHandler handler = new InvocationHandler() {
-			private final Set<Integer> uniqueChecksums = new HashSet<>();
-
-			private static final int MAX_RETRIES = 100;
-
-			@Override
-			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				Object result = null;
-				boolean isUnique = false;
-				int retryCounter = 0;
-				do {
-					// invoke real instance:
-					result = method.invoke(TextProducer.this, args);
-					isUnique = isUnique(result);
-					retryCounter++;
-					if (retryCounter >= MAX_RETRIES) {
-						// prevent endless loop if no more elements are possible to create
-						throw new IllegalStateException("no more unique element found after " + retryCounter
-								+ " retries. Last found element was " + result);
-					}
-				} while (isUnique == false);
-				return result;
-			}
-
-			private boolean isUnique(Object result) {
-				// null values are no values, so they are not checked
-				if (result == null) {
-					return true;
-				}
-
-				// no need for cryptographic strength, only for collision detection and minimal
-				// footprint:
-				return uniqueChecksums.add(result.hashCode());
-			}
-
-		};
-
-		return (Texts) Proxy.newProxyInstance(Texts.class.getClassLoader(), new Class<?>[] { Texts.class }, handler);
+		return new UniqueHandler<>(this, Texts.class).createProxy();
 	}
 
 	/*
