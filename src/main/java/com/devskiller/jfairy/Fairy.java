@@ -23,13 +23,13 @@ import com.devskiller.jfairy.producer.payment.IBANProperties;
 import com.devskiller.jfairy.producer.person.Person;
 import com.devskiller.jfairy.producer.person.PersonFactory;
 import com.devskiller.jfairy.producer.person.PersonProperties;
+import com.devskiller.jfairy.producer.text.TextProducerImpl;
 import com.devskiller.jfairy.producer.text.TextProducer;
-import com.devskiller.jfairy.producer.text.Texts;
 import com.devskiller.jfairy.producer.unique.UniqueHandler;
 
 public final class Fairy {
 
-	private final TextProducer textProducer;
+	private final TextProducerImpl textProducer;
 	private final PersonFactory personFactory;
 	private final NetworkProducer networkProducer;
 	private final BaseProducer baseProducer;
@@ -39,7 +39,7 @@ public final class Fairy {
 	private final IBANFactory ibanFactory;
 
 	@Inject
-	Fairy(TextProducer textProducer, PersonFactory personFactory, NetworkProducer networkProducer,
+	Fairy(TextProducerImpl textProducer, PersonFactory personFactory, NetworkProducer networkProducer,
 	      BaseProducer baseProducer, DateProducer dateProducer, CreditCardProvider creditCardProvider,
 	      CompanyFactory companyFactory, IBANFactory ibanFactory) {
 		this.textProducer = textProducer;
@@ -79,8 +79,13 @@ public final class Fairy {
 	}
 
 
-	public Texts uniqueTextProducer() {
-		return new UniqueHandler<>(textProducer, Texts.class).createProxy();
+	/**
+	 * Use this method for generating unique texts
+	 *
+	 * @return A {@link com.devskiller.jfairy.producer.text.TextProducer} instance
+	 */
+	public TextProducer uniqueTextProducer() {
+		return new UniqueHandler<>(textProducer, TextProducer.class).createProxy();
 	}
 
 	/**
