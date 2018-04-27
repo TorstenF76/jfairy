@@ -11,7 +11,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.devskiller.jfairy.producer.BaseProducer;
-import com.devskiller.jfairy.producer.unique.UniqueHandler;
 import com.devskiller.jfairy.producer.util.TextUtils;
 
 public class TextProducer implements Texts {
@@ -36,10 +35,6 @@ public class TextProducer implements Texts {
 	public TextProducer(TextProducerInternal textProducerInternal, BaseProducer baseProducer) {
 		this.textProducerInternal = textProducerInternal;
 		this.baseProducer = baseProducer;
-	}
-
-	public Texts unique() {
-		return new UniqueHandler<>(this, Texts.class).createProxy();
 	}
 
 	/*

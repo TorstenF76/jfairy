@@ -24,6 +24,8 @@ import com.devskiller.jfairy.producer.person.Person;
 import com.devskiller.jfairy.producer.person.PersonFactory;
 import com.devskiller.jfairy.producer.person.PersonProperties;
 import com.devskiller.jfairy.producer.text.TextProducer;
+import com.devskiller.jfairy.producer.text.Texts;
+import com.devskiller.jfairy.producer.unique.UniqueHandler;
 
 public final class Fairy {
 
@@ -74,6 +76,11 @@ public final class Fairy {
 	 */
 	public TextProducer textProducer() {
 		return textProducer;
+	}
+
+
+	public Texts uniqueTextProducer() {
+		return new UniqueHandler<>(textProducer, Texts.class).createProxy();
 	}
 
 	/**

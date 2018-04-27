@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UniqueHandler<T> {
 	private static final int MAX_RETRIES = 100;
@@ -31,21 +32,28 @@ public class UniqueHandler<T> {
 
 					@Override
 					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-						Object result = null;
-						boolean isUnique = false;
-						int retryCounter = 0;
+						int retryCounter = MAX_RETRIES;
 						do {
 							// invoke real instance:
-							result = method.invoke(producer, args);
-							isUnique = isUnique(result);
-							retryCounter++;
-							if (retryCounter >= MAX_RETRIES) {
-								// prevent endless loop if no more elements are possible to create
-								throw new IllegalStateException("no more unique element found after " + retryCounter
-										+ " retries. Last found element was " + result);
+							Object result = method.invoke(producer, args);
+							
+							// check for forbidden methods
+							if (method.isAnnotationPresent(UniqueIgnore.class)) {
+								return result;
 							}
-						} while (isUnique == false);
-						return result;
+							
+							// check for uniqueness
+							if (isUnique(result)) {
+								return result;
+							}
+							
+							// try again
+							retryCounter--;
+						} while (retryCounter > 0);
+						
+						// prevent endless loop if no more elements are possible to create
+						throw new IllegalStateException(
+								"no more unique element found after " + MAX_RETRIES + " retries. ");
 					}
 
 					private boolean isUnique(Object result) {

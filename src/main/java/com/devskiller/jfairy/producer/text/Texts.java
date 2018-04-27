@@ -1,7 +1,10 @@
 package com.devskiller.jfairy.producer.text;
 
+import com.devskiller.jfairy.producer.unique.UniqueIgnore;
+
 public interface Texts {
 
+	@UniqueIgnore
 	Texts limitedTo(int limit);
 
 	String result(String result);
