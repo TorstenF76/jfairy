@@ -3,15 +3,22 @@ package com.devskiller.jfairy.producer.unique;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+
 public class UniqueHandler<T> {
 	private static final int MAX_RETRIES = 100;
 	private final T producer;
-	private final Set<Integer> uniqueChecksums = new HashSet<>();
+	private final Set<String> uniqueChecksums = new HashSet<>();
 	private Class<T> interfaceClass;
+	private static final HashFunction hashFunction = Hashing.goodFastHash(64);
 
 	/**
 	 * 
@@ -36,21 +43,21 @@ public class UniqueHandler<T> {
 						do {
 							// invoke real instance:
 							Object result = method.invoke(producer, args);
-							
+
 							// check for forbidden methods
 							if (method.isAnnotationPresent(UniqueIgnore.class)) {
 								return result;
 							}
-							
+
 							// check for uniqueness
 							if (isUnique(result)) {
 								return result;
 							}
-							
+
 							// try again
 							retryCounter--;
 						} while (retryCounter > 0);
-						
+
 						// prevent endless loop if no more elements are possible to create
 						throw new IllegalStateException(
 								"no more unique element found after " + MAX_RETRIES + " retries. ");
@@ -62,9 +69,26 @@ public class UniqueHandler<T> {
 							return true;
 						}
 
-						// no need for cryptographic strength, only for collision detection and minimal
-						// footprint:
-						return uniqueChecksums.add(result.hashCode());
+						HashCode hashCode = createHashcode(result);
+						return uniqueChecksums.add(hashCode.toString());
+					}
+
+					/**
+					 * no need for cryptographic strength, only for collision detection and minimal
+					 * footprint
+					 */
+					private HashCode createHashcode(Object result) {
+						if (result instanceof Long) {
+							return hashFunction.hashLong((Long) result);
+						}
+						if (result instanceof Integer) {
+							return hashFunction.hashInt((Integer) result);
+						}
+						if (result instanceof String) {
+							return hashFunction.hashString((String) result, StandardCharsets.UTF_8);
+						}
+						// everything else should have a meaningful toString() implementation
+						return hashFunction.hashString(result.toString(), StandardCharsets.UTF_8);
 					}
 				});
 	}
